@@ -89,7 +89,10 @@ class News(commands.Cog):
         
         async with ctx.typing():
             try:
-                news_data = await self.news_fetcher.fetch_all_news()
+                news_data = await asyncio.wait_for(
+                    self.news_fetcher.fetch_all_news(),
+                    timeout=90
+                )
                 
                 if region == "all":
                     for reg, articles in news_data.items():
@@ -109,8 +112,11 @@ class News(commands.Cog):
                 
                 logger.info(f"Sent news for region: {region} to user {ctx.author}")
                 
+            except asyncio.TimeoutError:
+                logger.error(f"Timeout fetching news for region {region}")
+                await ctx.send(f"Timeout fetching news. Please try again later.")
             except Exception as e:
-                logger.error(f"Error fetching news: {e}")
+                logger.error(f"Error fetching news: {e}", exc_info=True)
                 await ctx.send(f"Error fetching news: {str(e)}")
 
     @commands.command(name="bothelp")
@@ -139,11 +145,25 @@ class News(commands.Cog):
                 logger.warning(f"Channel {channel_id} not found")
                 return
             
-            # Fetch latest news
-            news_data = await self.news_fetcher.fetch_all_news()
+            # Fetch latest news with error handling
+            try:
+                news_data = await asyncio.wait_for(
+                    self.news_fetcher.fetch_all_news(),
+                    timeout=90  # 90 second timeout for entire fetch operation
+                )
+            except asyncio.TimeoutError:
+                logger.error("News fetcher timed out after 90 seconds, skipping this cycle")
+                return
+            except Exception as e:
+                logger.error(f"Error fetching news: {e}", exc_info=True)
+                return
+            
             new_articles_posted = 0
             
             for region, articles in news_data.items():
+                if not articles:  # Skip empty regions
+                    continue
+                    
                 for article in articles[:10]:  # Check top 10 articles per region
                     # Check if this article was already posted
                     if article.url not in self.posted_articles:
@@ -180,7 +200,7 @@ class News(commands.Cog):
                     self.cleanup_old_articles()
                 
         except Exception as e:
-            logger.error(f"Error in real-time news checker: {e}")
+            logger.error(f"Error in real-time news checker: {e}", exc_info=True)
 
     @real_time_news_checker.before_loop
     async def before_real_time_checker(self):
@@ -189,7 +209,8 @@ class News(commands.Cog):
 
     def cog_unload(self):
         """Cleanup when cog is unloaded"""
-        self.real_time_news_checker.cancel()
+        if hasattr(self, 'real_time_news_checker'):
+            self.real_time_news_checker.cancel()
 
 async def setup(bot: commands.Bot):
     """Setup the News cog"""
