@@ -1,0 +1,60 @@
+{
+  "bot": {
+    "token": "Your_Token",
+    "prefix": "!",
+    "description": "Real-time Discord News Bot",
+    "status": "Streaming news 24/7"
+  },
+  "discord": {
+    "channel_id": "1433705946072219770",
+    "embed_color": "0x3498DB",
+    "max_embed_fields": 25,
+    "rate_limit_delay": 0.5
+  },
+  "news": {
+    "check_interval_minutes": 2,
+    "articles_per_feed": 10,
+    "cache_duration_days": 7,
+    "newsapi_key": "your_newsapi_key_here"
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "logs/bot.log",
+    "max_bytes": 10485760,
+    "backup_count": 5
+  },
+  "sources": {
+    "usa": [
+      "nyt",
+      "bbc_news_world",
+      "nbc_news",
+      "foxnews",
+      "guardian_world",
+      "vox",
+      "washington_post",
+      "wired"
+    ],
+    "uk": [
+      "independent",
+      "telegraph",
+      "sky_news",
+      "guardian_uk",
+      "mirror",
+      "sun",
+      "bbc_uk",
+      "metro"
+    ],
+    "europe": [
+      "guardian_europe",
+      "france24",
+      "politico_eu",
+      "ireland_news",
+      "bbc_europe",
+      "bbc_business",
+      "techcrunch",
+      "guardian_sci",
+      "bbc_health"
+    ]
+  }
+}
